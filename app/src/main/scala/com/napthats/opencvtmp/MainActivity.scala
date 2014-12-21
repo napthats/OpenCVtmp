@@ -56,7 +56,7 @@ class MainActivity extends Activity with CvCameraViewListener2 {
   }
 
   def onCameraFrame(inputFrame: CvCameraViewFrame): Mat = {
-    Imgproc.Canny(inputFrame.gray, mOutputFrame, 80, 100)
+    Imgproc.Canny(inputFrame.gray, mOutputFrame, 50, 100)
     Core.bitwise_not(mOutputFrame, mOutputFrame)
     mOutputFrame
   }
