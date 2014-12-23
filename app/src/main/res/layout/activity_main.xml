@@ -15,6 +15,31 @@
         android:layout_height="fill_parent"
         android:visibility="visible"
         opencv:camera_id="any"
-        opencv:show_fps="true" />
+        opencv:show_fps="true"
+        android:layout_toLeftOf="@+id/button_p"
+        android:layout_toStartOf="@+id/button_p" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="P"
+        android:id="@+id/button_p"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:onClick="onButtonClick" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="R"
+        android:id="@+id/button_r"
+        android:layout_below="@+id/button_p"
+        android:layout_toRightOf="@+id/camera_view"
+        android:layout_toEndOf="@+id/camera_view"
+        android:onClick="onButtonClick"
+        android:nestedScrollingEnabled="true" />
 
 </RelativeLayout>

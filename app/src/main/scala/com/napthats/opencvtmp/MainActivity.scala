@@ -6,6 +6,7 @@ import android.util.Log
 import android.app.Activity
 import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.view.View
 import org.opencv.android.CameraBridgeViewBase.{CvCameraViewFrame, CvCameraViewListener2}
 import org.opencv.android.{BaseLoaderCallback, CameraBridgeViewBase, OpenCVLoader, LoaderCallbackInterface}
 import org.opencv.core.{Rect, Mat, Core, CvType}
@@ -67,11 +68,48 @@ class MainActivity extends Activity with CvCameraViewListener2 {
     mOutputFrame.release()
   }
 
+  var clicked = false
+  def onButtonClick(view : View): Unit = {
+    view.getId match {
+      case R.id.button_p => clicked = true
+      case R.id.button_r =>
+        picture = None
+        diff_picture = None
+    }
+  }
+
+  var picture : Option[Mat] = None
+  var diff_picture : Option[Mat] = None
   def onCameraFrame(input_frame: CvCameraViewFrame): Mat = {
+    if (clicked) {
+      clicked = false
+      diff_picture match {
+        case None =>
+          picture match {
+            case None => picture = Some(input_frame.rgba())
+            case Some(p) =>
+              val q = new Mat()
+              Core.absdiff(input_frame.rgba(), p, q)
+              diff_picture = Some(q)
+          }
+        case Some(_) =>
+          None
+      }
+   }
+
+    diff_picture match {
+      case None => input_frame.rgba()
+      case Some(p) => p
+    }
+
+
+
+
     //Imgproc.Canny(inputFrame.gray, mOutputFrame, 50, 100)
     //Core.bitwise_not(mOutputFrame, mOutputFrame)
     //mOutputFrame
-    var input_mat_list  = new util.ArrayList[Mat]()
+
+    /*var input_mat_list  = new util.ArrayList[Mat]()
     Core.split(input_frame.rgba(), input_mat_list)
     input_mat_list.remove(3)
     var input_mat : Mat = new Mat()
@@ -89,6 +127,6 @@ class MainActivity extends Activity with CvCameraViewListener2 {
         new Mat(364, 364, CvType.CV_8UC3).copyTo(input_mat_copy)
         input_mat
       case None => input_mat
-    }
+    }*/
   }
 }
