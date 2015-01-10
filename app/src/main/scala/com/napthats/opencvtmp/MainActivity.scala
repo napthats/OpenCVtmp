@@ -10,6 +10,8 @@ import android.view.View
 import org.opencv.android.CameraBridgeViewBase.{CvCameraViewFrame, CvCameraViewListener2}
 import org.opencv.android.{BaseLoaderCallback, CameraBridgeViewBase, OpenCVLoader, LoaderCallbackInterface}
 import org.opencv.core.{Rect, Mat, Core, CvType}
+import org.opencv.video.BackgroundSubtractor
+import org.opencv.video.BackgroundSubtractorMOG2
 import org.opencv.android.Utils
 
 class MainActivity extends Activity with CvCameraViewListener2 {
@@ -17,6 +19,7 @@ class MainActivity extends Activity with CvCameraViewListener2 {
   private var mOutputFrame: Mat = null
   private var imageMatcher : ImageMatcher = null
   private var frameImageMat : Mat = null
+  private var bs : BackgroundSubtractor = null
 
   private val mLoaderCallback = new BaseLoaderCallback(this) {
     override def onManagerConnected(status: Int) {
@@ -28,6 +31,7 @@ class MainActivity extends Activity with CvCameraViewListener2 {
           imageMatcher = new ImageMatcher()
           imageMatcher.registerImage(twicat)
           frameImageMat = Utils.loadResource(getApplicationContext, R.drawable.frame)
+          bs = new BackgroundSubtractorMOG2(1000,36)
          case _ =>
           super.onManagerConnected(status)
       }
@@ -81,52 +85,12 @@ class MainActivity extends Activity with CvCameraViewListener2 {
   var picture : Option[Mat] = None
   var diff_picture : Option[Mat] = None
   def onCameraFrame(input_frame: CvCameraViewFrame): Mat = {
-    if (clicked) {
-      clicked = false
-      diff_picture match {
-        case None =>
-          picture match {
-            case None => picture = Some(input_frame.rgba())
-            case Some(p) =>
-              val q = new Mat()
-              Core.absdiff(input_frame.rgba(), p, q)
-              diff_picture = Some(q)
-          }
-        case Some(_) =>
-          None
-      }
-   }
-
-    diff_picture match {
-      case None => input_frame.rgba()
-      case Some(p) => p
-    }
-
-
-
-
-    //Imgproc.Canny(inputFrame.gray, mOutputFrame, 50, 100)
-    //Core.bitwise_not(mOutputFrame, mOutputFrame)
-    //mOutputFrame
-
-    /*var input_mat_list  = new util.ArrayList[Mat]()
-    Core.split(input_frame.rgba(), input_mat_list)
-    input_mat_list.remove(3)
-    var input_mat : Mat = new Mat()
-    Core.merge(input_mat_list, input_mat)
-    //Log.i("input_type", input_mat.`type`().toString())
-    imageMatcher.matchWith(input_mat) match {
-      case Some((x, y)) =>
-        Log.i("x", x.toString())
-        Log.i("y", y.toString())
-        //Log.i("input_mat_width", input_mat.size().width.toString())
-        //Log.i("input_mat_height", input_mat.size().height.toString())
-        val rect = new Rect(x, y, 364, 364)
-        val input_mat_copy = new Mat(input_mat, rect)
-        //frameImageMat.copyTo(input_mat_copy)
-        new Mat(364, 364, CvType.CV_8UC3).copyTo(input_mat_copy)
-        input_mat
-      case None => input_mat
-    }*/
+    val input_mat = input_frame.rgba()
+    val output_mat = new Mat()
+    val fmask = new Mat()
+    bs.apply(input_mat, fmask)
+    Core.bitwise_and(input_mat, input_mat, output_mat, fmask)
+    //output_mat
+    fmask
   }
 }
